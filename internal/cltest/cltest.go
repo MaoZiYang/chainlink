@@ -545,7 +545,7 @@ func FixtureCreateServiceAgreementViaWeb(
 ) models.ServiceAgreement {
 	client := app.NewHTTPClient()
 
-	agreementWithoutOracle := EasyJSONFromFixture("../internal/fixtures/web/hello_world_agreement.json")
+	agreementWithoutOracle := EasyJSONFromFixture(path)
 	account, err := app.Store.KeyStore.GetAccount()
 	assert.NoError(t, err)
 	agreementWithOracle := agreementWithoutOracle.Add("oracles", []string{account.Address.Hex()})
