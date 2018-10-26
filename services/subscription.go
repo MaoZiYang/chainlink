@@ -34,6 +34,14 @@ const (
 // If updating this, be sure to update the truffle suite's "expected event signature" test.
 var RunLogTopic = mustHash("RunRequest(bytes32,address,uint256,uint256,uint256,bytes)")
 
+// ServiceAgreementExecutionTopic is the signature for the
+// ServiceAgreementExecutionRequest(...) event which Chainlink
+// ServiceAgreementExecution initiators watch for. See
+// https://github.com/smartcontractkit/chainlink/blob/master/solidity/contracts/Coordinator.sol
+// If updating this, be sure to update the truffle suite's "expected event
+// signature" test.
+var ServiceAgreementRunLogTopic = mustHash("ServiceAgreementExecution(bytes32,address,uint256,uint256,uint256,bytes)")
+
 // OracleFulfillmentFunctionID is the function id of the oracle fulfillment
 // method used by EthTx: bytes4(keccak256("fulfillData(uint256,bytes32)"))
 // Kept in sync with solidity/contracts/Oracle.sol
@@ -64,7 +72,18 @@ func StartJobSubscription(job models.JobSpec, head *models.IndexableBlockNumber,
 	}
 
 	for _, initr := range job.InitiatorsFor(models.InitiatorRunLog) {
-		sub, err := StartRunLogSubscription(initr, job, head, store)
+		sub, err := StartRunLogSubscription(
+			initr, job, head, store, RunLogTopic, receiveRunLog)
+		merr = multierr.Append(merr, err)
+		if err == nil {
+			initSubs = append(initSubs, sub)
+		}
+	}
+
+	for _, initr := range job.InitiatorsFor(models.InitiatorServiceAgreementRunLog) {
+		sub, err := StartRunLogSubscription(
+			initr, job, head, store, ServiceAgreementRunLogTopic,
+			receiveRunLog)
 		merr = multierr.Append(merr, err)
 		if err == nil {
 			initSubs = append(initSubs, sub)
@@ -149,18 +168,25 @@ func (sub InitiatorSubscription) dispatchLog(log strpkg.Log) {
 }
 
 // TopicFiltersForRunLog generates the two variations of RunLog IDs that could
-// possibly be entered. There is the ID, hex encoded and the ID zero padded.
-func TopicFiltersForRunLog(jobID string) [][]common.Hash {
+// possibly be entered on a RunLog or a ServiceAgreementRunLog. There is the ID,
+// hex encoded and the ID zero padded.
+func TopicFiltersForRunLog(logTopic common.Hash, jobID string) [][]common.Hash {
 	hexJobID := common.BytesToHash([]byte(jobID))
 	jobIDZeroPadded := common.BytesToHash(common.RightPadBytes(hexutil.MustDecode("0x"+jobID), utils.EVMWordByteLen))
 	// RunLogTopic AND (0xHEXJOBID OR 0xJOBID0padded)
-	return [][]common.Hash{{RunLogTopic}, {hexJobID, jobIDZeroPadded}}
+	return [][]common.Hash{{logTopic}, {hexJobID, jobIDZeroPadded}}
 }
 
-// StartRunLogSubscription starts an InitiatorSubscription tailored for use with RunLogs.
-func StartRunLogSubscription(initr models.Initiator, job models.JobSpec, head *models.IndexableBlockNumber, store *strpkg.Store) (Unsubscriber, error) {
-	filter := NewInitiatorFilterQuery(initr, head, TopicFiltersForRunLog(job.ID))
-	return NewInitiatorSubscription(initr, job, store, filter, receiveRunLog)
+// StartRunLogSubscription starts an InitiatorSubscription tailored for use with
+// RunLogs or ServiceAgreementRunLog's.
+func StartRunLogSubscription(initr models.Initiator,
+	job models.JobSpec,
+	head *models.IndexableBlockNumber,
+	store *strpkg.Store,
+	logTopic common.Hash,
+	receiver func(le InitiatorSubscriptionLogEvent)) (Unsubscriber, error) {
+	filter := NewInitiatorFilterQuery(initr, head, TopicFiltersForRunLog(logTopic, job.ID))
+	return NewInitiatorSubscription(initr, job, store, filter, receiver)
 }
 
 // StartEthLogSubscription starts an InitiatorSubscription tailored for use with EthLogs.

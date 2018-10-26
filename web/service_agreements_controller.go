@@ -3,7 +3,6 @@ package web
 import (
 	"errors"
 	"fmt"
-
 	"github.com/asdine/storm"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/gin-gonic/gin"
@@ -47,8 +46,11 @@ func (sac *ServiceAgreementsController) Create(c *gin.Context) {
 			c.AbortWithError(500, err)
 			return
 		}
+		if err = sac.App.AddJob(sa.JobSpec); err != nil {
+			c.AbortWithError(500, err)
+			return
+		}
 	}
-
 	if buffer, err := NewJSONAPIResponse(&sa); err != nil {
 		c.AbortWithError(500, fmt.Errorf("failed to marshal document: %+v", err))
 	} else {

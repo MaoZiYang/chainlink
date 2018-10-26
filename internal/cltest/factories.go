@@ -12,6 +12,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
+	ethtypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/smartcontractkit/chainlink/adapters"
 	"github.com/smartcontractkit/chainlink/logger"
 	"github.com/smartcontractkit/chainlink/services"
@@ -256,6 +257,27 @@ func NewRunLog(
 		Data:        StringToVersionedLogData("internalID", json),
 		Topics: []common.Hash{
 			services.RunLogTopic,
+			StringToHash(jobID),
+			requester.Hash(),
+			minimumContractPayment.ToHash(),
+		},
+	}
+}
+
+// NewServiceAgreementExecutionEvent create ethtypes.Log for given jobid, address, block, and json
+func NewServiceAgreementExecutionEvent(
+	jobID string,
+	emitter common.Address,
+	requester common.Address,
+	blk int,
+	json string,
+) ethtypes.Log {
+	return ethtypes.Log{
+		Address:     emitter,
+		BlockNumber: uint64(blk),
+		Data:        StringToVersionedLogData("internalID", json),
+		Topics: []common.Hash{
+			services.ServiceAgreementRunLogTopic,
 			StringToHash(jobID),
 			requester.Hash(),
 			minimumContractPayment.ToHash(),

@@ -130,6 +130,7 @@ func (j JobSpec) Started(t time.Time) bool {
 	return t.After(j.StartAt.Time) || t.Equal(j.StartAt.Time)
 }
 
+// Types of Initiators (see Initiator struct just below.)
 const (
 	// InitiatorRunLog for tasks in a job to watch an ethereum address
 	// and expect a JSON payload from a log event.
@@ -142,6 +143,10 @@ const (
 	InitiatorRunAt = "runat"
 	// InitiatorWeb for tasks in a job making a web request.
 	InitiatorWeb = "web"
+	// InitiatorServiceAgreementRunLog for tasks in a job to watch a
+	// Solidity Coordinator contract and expect a payload (XXX of what
+	// type?) from a log event.
+	InitiatorServiceAgreementRunLog = "sa_runlog"
 )
 
 // Initiator could be thought of as a trigger, defines how a Job can be
@@ -149,8 +154,9 @@ const (
 // Initiators will have their own unique ID, but will be associated
 // to a parent JobID.
 type Initiator struct {
-	ID              int    `json:"id" storm:"id,increment"`
-	JobID           string `json:"jobId" storm:"index"`
+	ID    int    `json:"id" storm:"id,increment"`
+	JobID string `json:"jobId" storm:"index"`
+	// Type is one of the Initiator* string constants defined just above.
 	Type            string `json:"type" storm:"index"`
 	InitiatorParams `json:"params,omitempty"`
 }
@@ -181,7 +187,8 @@ func (i *Initiator) UnmarshalJSON(input []byte) error {
 
 // IsLogInitiated Returns true if triggered by event logs.
 func (i Initiator) IsLogInitiated() bool {
-	return i.Type == InitiatorEthLog || i.Type == InitiatorRunLog
+	return i.Type == InitiatorEthLog || i.Type == InitiatorRunLog ||
+		i.Type == InitiatorServiceAgreementRunLog
 }
 
 // TaskSpec is the definition of work to be carried out. The

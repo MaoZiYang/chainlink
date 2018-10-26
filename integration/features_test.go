@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/onsi/gomega"
 	"github.com/smartcontractkit/chainlink/internal/cltest"
 	"github.com/smartcontractkit/chainlink/store"
@@ -524,11 +525,31 @@ func TestIntegration_CreateServiceAgreement(t *testing.T) {
 	app, cleanup := cltest.NewApplicationWithConfigAndUnlockedAccount(config)
 	defer cleanup()
 
-	sa := cltest.FixtureCreateServiceAgreementViaWeb(t, app, "../internal/fixtures/web/hello_world_agreement.json")
+	eth := app.MockEthClient()
+	logs := make(chan types.Log, 1) // Mock ethereum log events are sent via `logs`
+	eth.Context("app.Start()", func(eth *cltest.EthMock) {
+		eth.RegisterSubscription("logs", logs)
+	})
+	app.Start()
+	// Service agreement which has no tasks to perform
+	sa := cltest.FixtureCreateServiceAgreementViaWeb(t, app, "../internal/fixtures/web/noop_agreement.json")
+
 	assert.NotEqual(t, "", sa.ID)
-	cltest.FindJob(app.Store, sa.JobSpecID)
+	j := cltest.FindJob(app.Store, sa.JobSpecID)
 
 	assert.Equal(t, assets.NewLink(1000000000000000000), sa.Encumbrance.Payment)
 	assert.Equal(t, uint64(300), sa.Encumbrance.Expiration)
-	assert.NotEqual(t, "", sa.ID)
+
+	logs <- cltest.NewServiceAgreementExecutionEvent(
+		j.ID,
+		cltest.NewAddress(), // Emitter of this log
+		cltest.NewAddress(), // Requester of t his log
+		1,                   // Number of block this log should appear to come frome
+		`{}`)                // Log contents
+	// Wait for the job to be run
+	runs := cltest.WaitForRuns(t, j, app.Store, 1)
+	cltest.WaitForJobRunToComplete(t, app.Store, runs[0])
+
+	eth.EventuallyAllCalled(t)
+
 }

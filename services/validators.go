@@ -55,14 +55,16 @@ func ValidateInitiator(i models.Initiator, j models.JobSpec) error {
 		return validateRunAtInitiator(i, j)
 	case models.InitiatorCron:
 		return validateCronInitiator(i)
-	default:
-		return models.NewJSONAPIErrorsWith(fmt.Sprintf("type %v does not exist", i.Type))
 	case models.InitiatorWeb:
 		fallthrough
 	case models.InitiatorRunLog:
 		fallthrough
+	case models.InitiatorServiceAgreementRunLog:
+		fallthrough
 	case models.InitiatorEthLog:
 		return nil
+	default:
+		return models.NewJSONAPIErrorsWith(fmt.Sprintf("type %v does not exist", i.Type))
 	}
 }
 
