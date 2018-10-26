@@ -47,6 +47,12 @@ func TestServiceAgreementsController_Create(t *testing.T) {
 				createdSA := cltest.FindServiceAgreement(app.Store, responseSA.ID)
 				assert.NotEqual(t, "", createdSA.ID)
 				assert.NotEqual(t, "", createdSA.Signature.String())
+
+				var jobids []string
+				for _, j := range app.JobSubscriber.Jobs() {
+					jobids = append(jobids, j.ID)
+				}
+				assert.Contains(t, jobids, createdSA.JobSpec.ID)
 			}
 		})
 	}

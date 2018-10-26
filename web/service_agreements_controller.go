@@ -43,6 +43,9 @@ func (sac *ServiceAgreementsController) Create(c *gin.Context) {
 		} else if err = sac.App.GetStore().SaveServiceAgreement(&sa); err != nil {
 			c.AbortWithError(500, err)
 			return
+		} else if err = sac.App.AddJob(sa.JobSpec); err != nil {
+			c.AbortWithError(500, err)
+			return
 		}
 	}
 
