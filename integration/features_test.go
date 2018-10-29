@@ -543,7 +543,7 @@ func TestIntegration_CreateServiceAgreement(t *testing.T) {
 	logs <- cltest.NewServiceAgreementExecutionEvent(
 		j.ID,
 		cltest.NewAddress(), // Emitter of this log
-		cltest.NewAddress(), // Requester of t his log
+		cltest.NewAddress(), // Requester of this log
 		1,                   // Number of block this log should appear to come frome
 		`{}`)                // Log contents
 	// Wait for the job to be run
