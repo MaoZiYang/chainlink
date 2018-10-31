@@ -40,7 +40,7 @@ var RunLogTopic = mustHash("RunRequest(bytes32,address,uint256,uint256,uint256,b
 // https://github.com/smartcontractkit/chainlink/blob/master/solidity/contracts/Coordinator.sol
 // If updating this, be sure to update the truffle suite's "expected event
 // signature" test.
-var ServiceAgreementRunLogTopic = mustHash("ServiceAgreementExecution(bytes32,address,uint256,uint256,uint256,bytes)")
+var ServiceAgreementExecution = mustHash("ServiceAgreementExecution(bytes32,address,uint256,uint256,uint256,bytes)")
 
 // OracleFulfillmentFunctionID is the function id of the oracle fulfillment
 // method used by EthTx: bytes4(keccak256("fulfillData(uint256,bytes32)"))
@@ -80,9 +80,9 @@ func StartJobSubscription(job models.JobSpec, head *models.IndexableBlockNumber,
 		}
 	}
 
-	for _, initr := range job.InitiatorsFor(models.InitiatorServiceAgreementRunLog) {
+	for _, initr := range job.InitiatorsFor(models.InitiatorServiceAgreementExecution) {
 		sub, err := StartRunLogSubscription(
-			initr, job, head, store, ServiceAgreementRunLogTopic,
+			initr, job, head, store, ServiceAgreementExecution,
 			receiveRunLog)
 		merr = multierr.Append(merr, err)
 		if err == nil {
@@ -168,7 +168,7 @@ func (sub InitiatorSubscription) dispatchLog(log strpkg.Log) {
 }
 
 // TopicFiltersForRunLog generates the two variations of RunLog IDs that could
-// possibly be entered on a RunLog or a ServiceAgreementRunLog. There is the ID,
+// possibly be entered on a RunLog or a ServiceAgreementExecution. There is the ID,
 // hex encoded and the ID zero padded.
 func TopicFiltersForRunLog(logTopic common.Hash, jobID string) [][]common.Hash {
 	hexJobID := common.BytesToHash([]byte(jobID))
@@ -178,7 +178,7 @@ func TopicFiltersForRunLog(logTopic common.Hash, jobID string) [][]common.Hash {
 }
 
 // StartRunLogSubscription starts an InitiatorSubscription tailored for use with
-// RunLogs or ServiceAgreementRunLog's.
+// RunLog's or ServiceAgreementExecution's.
 func StartRunLogSubscription(initr models.Initiator,
 	job models.JobSpec,
 	head *models.IndexableBlockNumber,

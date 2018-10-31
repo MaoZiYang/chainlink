@@ -277,7 +277,7 @@ func NewServiceAgreementExecutionEvent(
 		BlockNumber: uint64(blk),
 		Data:        StringToVersionedLogData("internalID", json),
 		Topics: []common.Hash{
-			services.ServiceAgreementRunLogTopic,
+			services.ServiceAgreementExecution,
 			StringToHash(jobID),
 			requester.Hash(),
 			minimumContractPayment.ToHash(),

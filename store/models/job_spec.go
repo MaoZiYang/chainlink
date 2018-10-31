@@ -143,10 +143,10 @@ const (
 	InitiatorRunAt = "runat"
 	// InitiatorWeb for tasks in a job making a web request.
 	InitiatorWeb = "web"
-	// InitiatorServiceAgreementRunLog for tasks in a job to watch a
+	// InitiatorServiceAgreementExecution for tasks in a job to watch a
 	// Solidity Coordinator contract and expect a payload (XXX of what
 	// type?) from a log event.
-	InitiatorServiceAgreementRunLog = "sa_runlog"
+	InitiatorServiceAgreementExecution = "sa_runlog"
 )
 
 // Initiator could be thought of as a trigger, defines how a Job can be
@@ -188,7 +188,7 @@ func (i *Initiator) UnmarshalJSON(input []byte) error {
 // IsLogInitiated Returns true if triggered by event logs.
 func (i Initiator) IsLogInitiated() bool {
 	return i.Type == InitiatorEthLog || i.Type == InitiatorRunLog ||
-		i.Type == InitiatorServiceAgreementRunLog
+		i.Type == InitiatorServiceAgreementExecution
 }
 
 // TaskSpec is the definition of work to be carried out. The

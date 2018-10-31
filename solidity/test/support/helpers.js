@@ -294,3 +294,4 @@ export const executeServiceAgreementBytes = (sAID, to, fHash, runId, data) => {
   let funcSelector = functionSelector('executeServiceAgreement(address,uint256,uint256,bytes32,address,bytes4,bytes32,bytes)')
   return funcSelector + encoded.toString('hex')
 }
+
