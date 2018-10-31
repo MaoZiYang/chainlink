@@ -67,7 +67,9 @@ contract Oracle is Ownable {
     bytes32 _specId,
     address _callbackAddress,
     bytes4 _callbackFunctionId,
-    bytes32 _externalId,
+    bytes32 _externalId,  // This is the "requestId" set in
+                          // Chainlinked#chainlinkRequest XXX: Find a better
+                          // name for these IDs?
     bytes _data
   )
     public

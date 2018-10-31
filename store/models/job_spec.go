@@ -146,7 +146,7 @@ const (
 	// InitiatorServiceAgreementExecution for tasks in a job to watch a
 	// Solidity Coordinator contract and expect a payload (XXX of what
 	// type?) from a log event.
-	InitiatorServiceAgreementExecution = "sa_runlog"
+	InitiatorServiceAgreementExecution = "sa_runlog" // XXX: Change back to ServiceAgreementLog
 )
 
 // Initiator could be thought of as a trigger, defines how a Job can be

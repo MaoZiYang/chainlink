@@ -109,6 +109,30 @@ contract Chainlinked {
     return oracle;
   }
 
+  function serviceRequest(ChainlinkLib.Run memory _run, uint256 _amount)
+    internal
+    returns (bytes32)
+  {
+    _run.requestId = bytes32(requests);
+    requests += 1;
+    _run.close();
+    unfulfilledRequests[_run.requestId] = oracle;
+    emit ChainlinkRequested(_run.requestId);
+    require(link.transferAndCall(oracle, _amount, _run.encodeForCoordinator(clArgsVersion)), "unable to transferAndCall to oracle");
+
+    return _run.requestId;
+  }
+
+  //function fulfillServiceAgreement(bytes32 _requestId, uint256 _value)
+    //public
+    //checkChainlinkFulfillment(_requestId)
+  //{
+    //emit RequestFulfilled(_requestId, _value);
+    //totals[_requestId] += _value;
+    //sampleSize[_requestId] += 1;
+  //}
+
+
   modifier checkChainlinkFulfillment(bytes32 _requestId) {
     require(msg.sender == unfulfilledRequests[_requestId], "source must be the oracle of the request");
     _;

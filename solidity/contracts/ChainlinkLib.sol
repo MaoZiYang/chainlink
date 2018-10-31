@@ -4,6 +4,7 @@ import "solidity-cborutils/contracts/CBOR.sol";
 
 library ChainlinkLib {
   bytes4 internal constant oracleRequestDataFid = bytes4(keccak256("requestData(address,uint256,uint256,bytes32,address,bytes4,bytes32,bytes)"));
+  bytes4 internal constant coordinatorRequestDataFid = bytes4(keccak256("executeServiceAgreement(address,uint256,uint256,bytes32,address,bytes4,bytes32,bytes)"));
 
   using CBOR for Buffer.buffer;
 
@@ -34,7 +35,23 @@ library ChainlinkLib {
     uint256 _clArgsVersion
   ) internal pure returns (bytes memory) {
     return abi.encodeWithSelector(
-      oracleRequestDataFid,
+      oracleRequestDataFid, // need to change
+      0, // overridden by onTokenTransfer
+      0, // overridden by onTokenTransfer
+      _clArgsVersion,
+      self.specId,
+      self.callbackAddress,
+      self.callbackFunctionId,
+      self.requestId,
+      self.buf.buf);
+  }
+
+  function encodeForCoordinator(
+    Run memory self,
+    uint256 _clArgsVersion
+  ) internal pure returns (bytes memory) {
+    return abi.encodeWithSelector(
+      coordinatorRequestDataFid, // need to change
       0, // overridden by onTokenTransfer
       0, // overridden by onTokenTransfer
       _clArgsVersion,

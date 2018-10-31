@@ -1,9 +1,10 @@
 pragma solidity ^0.4.24;
 
+import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 
 // Coordinator handles oracle service aggreements between one or more oracles.
-contract Coordinator {
+contract Coordinator is Ownable {
   using SafeMath for uint256;
 
   struct ServiceAgreement {
@@ -30,7 +31,7 @@ contract Coordinator {
   }
 
   event RunRequest(
-    bytes32 indexed specId,
+    bytes32 indexed sAId,
     address indexed requester,
     uint256 indexed amount,
     uint256 internalId,
