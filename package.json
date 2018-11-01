@@ -52,6 +52,7 @@
     "jest": "^23.5",
     "jest-environment-enzyme": "^6.0.3",
     "jest-silent-reporter": "^0.1.0",
+    "json-api-normalizer": "^0.4.13",
     "json-pretty-html": "^1.1.2",
     "local-storage-fallback": "^4.1.1",
     "mock-local-storage": "^1.0.5",

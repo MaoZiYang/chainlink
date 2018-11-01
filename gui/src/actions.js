@@ -2,6 +2,7 @@ import * as api from 'api'
 import { AuthenticationError } from 'errors'
 import { pascalCase } from 'change-case'
 import transformJobs from 'actions/transforms/jobs'
+import normalize from 'json-api-normalizer'
 
 const createAction = type => ({type: type})
 
@@ -91,10 +92,14 @@ export const RECEIVE_JOB_SPEC_ERROR = 'RECEIVE_JOB_SPEC_ERROR'
 
 fetchActions.jobSpec = {
   requestActionType: REQUEST_JOB_SPEC,
-  receiveSuccess: json => ({
-    type: RECEIVE_JOB_SPEC_SUCCESS,
-    item: json.data.attributes
-  }),
+  receiveSuccess: json => {
+    const n = normalize(json)
+    console.log('received job spec - normalized: %o', n)
+    return ({
+      type: RECEIVE_JOB_SPEC_SUCCESS,
+      item: json.data.attributes
+    })
+  },
   receiveErrorType: RECEIVE_JOB_SPEC_ERROR
 }
 
@@ -247,7 +252,63 @@ const receiveUpdateSuccess = response => ({
 export const fetchJobs = (page, size) => sendFetchActions('jobs', page, size)
 export const fetchRecentlyCreatedJobs = size => sendFetchActions('recentlyCreatedJobs', size)
 export const fetchAccountBalance = () => sendFetchActions('accountBalance')
-export const fetchJobSpec = id => sendFetchActions('jobSpec', id)
+
+// ###########
+const handleError = dispatch => error => {
+  if (error instanceof AuthenticationError) {
+    dispatch(redirectToSignOut())
+  } else {
+    dispatch(notifyError(({msg}) => `ERROR!: ${msg}`, error))
+    // dispatch(createErrorAction(error, type))
+  }
+}
+
+const request = (type, normalizeData, ...apiArgs) => {
+  return dispatch => {
+    dispatch({type: `REQUEST_${type}`})
+    return api.getJobSpec(...apiArgs)
+      .then(json => {
+        const data = normalizeData(json)
+        dispatch({type: `UPSERT_${type}`, data: data})
+      })
+      .catch(handleError(dispatch))
+      // .finally(() => dispatch({type: `RESPONSE_${type}`}))
+      .finally(() => dispatch({type: `RESPONSE_${type}`}))
+  }
+}
+
+// export const fetchJobSpec = id => sendFetchActions('jobSpec', id)
+//export const fetchJobSpec = id => {
+//  return dispatch => {
+//    dispatch({type: 'REQUEST'})
+//    return api.getJobSpec(id)
+//      .then(json => {
+//        const data = normalize(json)
+//        dispatch({type: 'UPSERT', data: data})
+//      })
+//      //.catch(error => {
+//      //  // dispatch(
+//      //  //   // TODO: Figure out how to get a default for this which is the current
+//      //  //   // unhandled component
+//      //  //   notifyError(({msg}) => `ERROR!: ${msg}`, error)
+//      //  // )
+//      //  // dispatch(createErrorAction(error, 'ERROR'))
+//      //  //
+//      //  // TODO: Need to figure out how to make this work in a reasonable way so
+//      //  // that is redirects on 401 and shows a notification otherwise
+//      //  // curryErrorHandler(dispatch, 'SOME_ERROR')(error)
+//      //})
+//      .catch(handleError(dispatch))
+//      .finally(() => dispatch({type: 'RESPONSE'}))
+//  }
+//}
+export const fetchJobSpec = id => request(
+  'JOB',
+  json => normalize(json),
+  id
+)
+// ###########
+
 export const fetchJobSpecRuns = (id, page, size) => sendFetchActions('jobSpecRuns', id, page, size)
 export const fetchJobSpecRun = id => sendFetchActions('jobSpecRun', id)
 export const fetchConfiguration = () => sendFetchActions('configuration')
