@@ -1,23 +1,23 @@
-process.env.SOLIDITY_INCLUDE = '../../solidity/contracts/:../../solidity/contracts/examples/:../../solidity/contracts/interfaces/:../../contracts/:../../node_modules/:../../node_modules/link_token/contracts:../../node_modules/openzeppelin-solidity/contracts/ownership/:../../node_modules/@ensdomains/ens/contracts/'
+process.env.SOLIDITY_INCLUDE = '../../solidity/contracts/:../../solidity/contracts/examples/:../../solidity/contracts/interfaces/:../../contracts/:../../node_modules/:../../node_modules/link_token/contracts:../../node_modules/openzeppelin-solidity/contracts/ownership/:../../node_modules/@ensdomains/ens/contracts/';
 
-const PRIVATE_KEY = 'c87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3'
+const PRIVATE_KEY = 'c87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3';
 
-const Wallet = require('../../app/wallet.js')
-const Utils = require('../../app/utils.js')
-const Deployer = require('../../app/deployer.js')
+const Wallet = require('../../app/wallet.js');
+const Utils = require('../../app/utils.js');
+const Deployer = require('../../app/deployer.js');
 
-const abi = require('ethereumjs-abi')
-const util = require('ethereumjs-util')
-const BN = require('bn.js')
-const ethjsUtils = require('ethereumjs-util')
+const abi = require('ethereumjs-abi');
+const util = require('ethereumjs-util');
+const BN = require('bn.js');
+const ethjsUtils = require('ethereumjs-util');
 
-const HEX_BASE = 16
+const HEX_BASE = 16;
 
-let consumer, defaultAccount, eth, oracleNode, stranger
-let deployer, utils, wallet
+let consumer, defaultAccount, eth, oracleNode, stranger;
+let deployer, utils, wallet;
 
 (() => {
-  eth = web3.eth
+  eth = web3.eth;
 
   before(async function () {
     // Default hard coded truffle accounts:
@@ -50,18 +50,18 @@ let deployer, utils, wallet
     // ==================
     // Mnemonic:      candy maple cake sugar pudding cream honey rich smooth crumble sweet treat
     // Base HD Path:  m/44'/60'/0'/0/{account_index}
-    const accounts = eth.accounts
+    const accounts = eth.accounts;
 
-    defaultAccount = accounts[0]
-    oracleNode = accounts[1]
-    stranger = accounts[2]
-    consumer = accounts[3]
+    defaultAccount = accounts[0];
+    oracleNode = accounts[1];
+    stranger = accounts[2];
+    consumer = accounts[3];
 
-    utils = Utils(web3.currentProvider)
-    wallet = Wallet(PRIVATE_KEY, utils)
-    deployer = Deployer(wallet, utils)
-  })
-})()
+    utils = Utils(web3.currentProvider);
+    wallet = Wallet(PRIVATE_KEY, utils);
+    deployer = Deployer(wallet, utils);
+  });
+})();
 
 export {
   consumer,
@@ -71,27 +71,27 @@ export {
   stranger
 }
 
-export const bigNum = number => web3.toBigNumber(number)
+export const bigNum = number => web3.toBigNumber(number);
 
-export const toWei = number => bigNum(web3.toWei(number))
+export const toWei = number => bigNum(web3.toWei(number));
 
-export const hexToInt = string => web3.toBigNumber(string)
+export const hexToInt = string => web3.toBigNumber(string);
 
 export const toHexWithoutPrefix = arg => {
   if (arg instanceof Buffer || arg instanceof BN) {
-    return arg.toString('hex')
+    return arg.toString('hex');
   } else if (arg instanceof Uint8Array) {
-    return Array.prototype.reduce.call(arg, (a, v) => a + v.toString('16').padStart(2, '0'), '')
+    return Array.prototype.reduce.call(arg, (a, v) => a + v.toString('16').padStart(2, '0'), '');
   } else {
-    return Buffer.from(arg, 'ascii').toString('hex')
+    return Buffer.from(arg, 'ascii').toString('hex');
   }
 }
 
 export const toHex = value => {
-  return `0x${toHexWithoutPrefix(value)}`
+  return `0x${toHexWithoutPrefix(value)}`;
 }
 
-export const deploy = (filePath, ...args) => deployer.perform(filePath, ...args)
+export const deploy = (filePath, ...args) => deployer.perform(filePath, ...args);
 
 export const getEvents = contract => (
   new Promise(
@@ -103,147 +103,147 @@ export const getEvents = contract => (
 )
 
 export const getLatestEvent = async (contract) => {
-  let events = await getEvents(contract)
-  return events[events.length - 1]
-}
+  let events = await getEvents(contract);
+  return events[events.length - 1];
+};
 
-export const requestDataFrom = (oc, link, amount, args) => link.transferAndCall(oc.address, amount, args)
+export const requestDataFrom = (oc, link, amount, args) => link.transferAndCall(oc.address, amount, args);
 
-export const functionSelector = signature => '0x' + web3.sha3(signature).slice(2).slice(0, 8)
+export const functionSelector = signature => '0x' + web3.sha3(signature).slice(2).slice(0, 8);
 
 export const assertActionThrows = action => (
   Promise
     .resolve()
     .then(action)
     .catch(error => {
-      assert(error, 'Expected an error to be raised')
-      assert(error.message, 'Expected an error to be raised')
-      return error.message
+      assert(error, 'Expected an error to be raised');
+      assert(error.message, 'Expected an error to be raised');
+      return error.message;
     })
     .then(errorMessage => {
-      assert(errorMessage, 'Expected an error to be raised')
-      const invalidOpcode = errorMessage.includes('invalid opcode')
-      const reverted = errorMessage.includes('VM Exception while processing transaction: revert')
-      assert.isTrue(invalidOpcode || reverted, 'expected error message to include "invalid JUMP" or "revert"')
+      assert(errorMessage, 'Expected an error to be raised');
+      const invalidOpcode = errorMessage.includes('invalid opcode');
+      const reverted = errorMessage.includes('VM Exception while processing transaction: revert');
+      assert.isTrue(invalidOpcode || reverted, 'expected error message to include "invalid JUMP" or "revert"');
       // see https://github.com/ethereumjs/testrpc/issues/39
       // for why the "invalid JUMP" is the throw related error when using TestRPC
     })
-)
+);
 
 export const checkPublicABI = (contract, expectedPublic) => {
-  let actualPublic = []
+  let actualPublic = [];
   for (const method of contract.abi) {
     if (method.type === 'function') actualPublic.push(method.name)
   };
 
   for (const method of actualPublic) {
-    let index = expectedPublic.indexOf(method)
-    assert.isAtLeast(index, 0, (`#${method} is NOT expected to be public`))
+    let index = expectedPublic.indexOf(method);
+    assert.isAtLeast(index, 0, (`#${method} is NOT expected to be public`));
   }
 
   for (const method of expectedPublic) {
-    let index = actualPublic.indexOf(method)
-    assert.isAtLeast(index, 0, (`#${method} is expected to be public`))
+    let index = actualPublic.indexOf(method);
+    assert.isAtLeast(index, 0, (`#${method} is expected to be public`));
   }
-}
+};
 
 export const decodeRunABI = log => {
-  let runABI = util.toBuffer(log.data)
-  let types = ['bytes32', 'address', 'bytes4', 'bytes']
-  return abi.rawDecode(types, runABI)
-}
+  let runABI = util.toBuffer(log.data);
+  let types = ['bytes32', 'address', 'bytes4', 'bytes'];
+  return abi.rawDecode(types, runABI);
+};
 
 export const decodeRunRequest = log => {
-  let runABI = util.toBuffer(log.data)
-  let types = ['uint256', 'uint256', 'bytes']
-  let [internalId, version, data] = abi.rawDecode(types, runABI)
-  return [log.topics[1], log.topics[2], log.topics[3], toHex(internalId), version, data]
-}
+  let runABI = util.toBuffer(log.data);
+  let types = ['uint256', 'uint256', 'bytes'];
+  let [internalId, version, data] = abi.rawDecode(types, runABI);
+  return [log.topics[1], log.topics[2], log.topics[3], toHex(internalId), version, data];
+};
 
 export const runRequestId = log => {
-  var [_, _, _, internalId, _, _] = decodeRunRequest(log)
-  return internalId
-}
+  var [_, _, _, internalId, _, _] = decodeRunRequest(log);
+  return internalId;
+};
 
 export const requestDataBytes = (specId, to, fHash, runId, data) => {
-  let types = ['address', 'uint256', 'uint256', 'bytes32', 'address', 'bytes4', 'bytes32', 'bytes']
-  let values = [0, 0, 1, specId, to, fHash, runId, data]
-  let encoded = abi.rawEncode(types, values)
-  let funcSelector = functionSelector('requestData(address,uint256,uint256,bytes32,address,bytes4,bytes32,bytes)')
-  return funcSelector + encoded.toString('hex')
+  let types = ['address', 'uint256', 'uint256', 'bytes32', 'address', 'bytes4', 'bytes32', 'bytes'];
+  let values = [0, 0, 1, specId, to, fHash, runId, data];
+  let encoded = abi.rawEncode(types, values);
+  let funcSelector = functionSelector('requestData(address,uint256,uint256,bytes32,address,bytes4,bytes32,bytes)');
+  return funcSelector + encoded.toString('hex');
 }
 
 export const newUint8ArrayFromStr = (str) => {
-  const codePoints = Array.prototype.map.call(str, c => c.charCodeAt(0))
-  return Uint8Array.from(codePoints)
-}
+  const codePoints = Array.prototype.map.call(str, c => c.charCodeAt(0));
+  return Uint8Array.from(codePoints);
+};
 
 // newUint8Array returns a uint8array of count bytes from either a hex or
 // decimal string, hex strings must begin with 0x
 export const newUint8Array = (str, count) => {
-  let result = new Uint8Array(count)
+  let result = new Uint8Array(count);
 
   if (str.startsWith('0x') || str.startsWith('0X')) {
-    const hexStr = str.slice(2).padStart(count * 2, '0')
+    const hexStr = str.slice(2).padStart(count * 2, '0');
     for (let i = result.length; i >= 0; i--) {
-      const offset = i * 2
-      result[i] = parseInt(hexStr[offset] + hexStr[offset + 1], HEX_BASE)
+      const offset = i * 2;
+      result[i] = parseInt(hexStr[offset] + hexStr[offset + 1], HEX_BASE);
     }
   } else {
-    const num = bigNum(str)
-    result = newHash('0x' + num.toString(HEX_BASE))
+    const num = bigNum(str);
+    result = newHash('0x' + num.toString(HEX_BASE));
   }
 
-  return result
+  return result;
 }
 
 // newSignature returns a signature object with v, r, and s broken up
 export const newSignature = str => {
-  const oracleSignature = newUint8Array(str, 65)
-  let v = oracleSignature[64]
+  const oracleSignature = newUint8Array(str, 65);
+  let v = oracleSignature[64];
   if (v < 27) {
-    v += 27
+    v += 27;
   }
   return {
     v: v,
     r: oracleSignature.slice(0, 32),
     s: oracleSignature.slice(32, 64),
     full: oracleSignature
-  }
-}
+  };
+};
 
 // newHash returns a 65 byte Uint8Array for representing a hash
 export const newHash = str => {
-  return newUint8Array(str, 32)
-}
+  return newUint8Array(str, 32);
+};
 
 // newAddress returns a 20 byte Uint8Array for representing an address
 export const newAddress = str => {
-  return newUint8Array(str, 20)
-}
+  return newUint8Array(str, 20);
+};
 
 // lengthTypedArrays sums the length of all specified TypedArrays
 export const lengthTypedArrays = (...arrays) => {
-  return arrays.reduce((a, v) => a + v.length, 0)
-}
+  return arrays.reduce((a, v) => a + v.length, 0);
+};
 
 export const toBuffer = uint8a => {
-  return Buffer.from(uint8a)
-}
+  return Buffer.from(uint8a);
+};
 
 // concatTypedArrays recursively concatenates TypedArrays into one big
 // TypedArray
 // TODO: Does not work recursively
 export const concatTypedArrays = (...arrays) => {
-  let size = lengthTypedArrays(...arrays)
-  let result = new arrays[0].constructor(size)
-  let offset = 0
+  let size = lengthTypedArrays(...arrays);
+  let result = new arrays[0].constructor(size);
+  let offset = 0;
   arrays.forEach((a) => {
-    result.set(a, offset)
-    offset += a.length
-  })
-  return result
-}
+    result.set(a, offset);
+    offset += a.length;
+  });
+  return result;
+};
 
 export const increaseTime5Minutes = async () => {
   await web3.currentProvider.send({
@@ -251,47 +251,47 @@ export const increaseTime5Minutes = async () => {
     method: 'evm_increaseTime',
     params: [300],
     id: 0
-  })
-}
+  });
+};
 
 export const calculateSAID = (payment, expiration, oracles, requestDigest) => {
   const serviceAgreementIDInput = concatTypedArrays(
     payment,
     expiration,
     concatTypedArrays(...(oracles.map(a => newHash(toHex(a))))),
-    requestDigest)
-  const serviceAgreementIDInputDigest = ethjsUtils.sha3(toHex(serviceAgreementIDInput))
-  return newHash(toHex(serviceAgreementIDInputDigest))
-}
+    requestDigest);
+  const serviceAgreementIDInputDigest = ethjsUtils.sha3(toHex(serviceAgreementIDInput));
+  return newHash(toHex(serviceAgreementIDInputDigest));
+};
 
 export const recoverPersonalSignature = (message, signature) => {
-  const personalSignPrefix = newUint8ArrayFromStr('\x19Ethereum Signed Message:\n')
+  const personalSignPrefix = newUint8ArrayFromStr('\x19Ethereum Signed Message:\n');
   const personalSignMessage = concatTypedArrays(
     personalSignPrefix,
     newUint8ArrayFromStr(message.length.toString()),
     message
-  )
-  const digest = ethjsUtils.sha3(toBuffer(personalSignMessage))
+  );
+  const digest = ethjsUtils.sha3(toBuffer(personalSignMessage));
   const requestDigestPubKey = ethjsUtils.ecrecover(digest,
     signature.v,
     toBuffer(signature.r),
     toBuffer(signature.s)
-  )
-  return ethjsUtils.pubToAddress(requestDigestPubKey)
-}
+                                                  );
+  return ethjsUtils.pubToAddress(requestDigestPubKey);
+};
 
 export const personalSign = (account, message) => {
   return newSignature(web3.eth.sign(
     toHexWithoutPrefix(account),
     toHexWithoutPrefix(message))
-  )
-}
+  );
+};
 
 export const executeServiceAgreementBytes = (sAID, to, fHash, runId, data) => {
-  let types = ['address', 'uint256', 'uint256', 'bytes32', 'address', 'bytes4', 'bytes32', 'bytes']
-  let values = [0, 0, 1, sAID, to, fHash, runId, data]
-  let encoded = abi.rawEncode(types, values)
-  let funcSelector = functionSelector('executeServiceAgreement(address,uint256,uint256,bytes32,address,bytes4,bytes32,bytes)')
-  return funcSelector + encoded.toString('hex')
-}
+  let types = ['address', 'uint256', 'uint256', 'bytes32', 'address', 'bytes4', 'bytes32', 'bytes'];
+  let values = [0, 0, 1, sAID, to, fHash, runId, data];
+  let encoded = abi.rawEncode(types, values);
+  let funcSelector = functionSelector('executeServiceAgreement(address,uint256,uint256,bytes32,address,bytes4,bytes32,bytes)');
+  return funcSelector + encoded.toString('hex');
+};
 

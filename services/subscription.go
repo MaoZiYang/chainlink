@@ -80,7 +80,7 @@ func StartJobSubscription(job models.JobSpec, head *models.IndexableBlockNumber,
 		}
 	}
 
-	for _, initr := range job.InitiatorsFor(models.InitiatorServiceAgreementExecution) {
+	for _, initr := range job.InitiatorsFor(models.InitiatorServiceAgreementExecutionLog) {
 		sub, err := StartRunLogSubscription(
 			initr, job, head, store, ServiceAgreementExecution,
 			receiveRunLog)
@@ -91,7 +91,9 @@ func StartJobSubscription(job models.JobSpec, head *models.IndexableBlockNumber,
 	}
 
 	if len(initSubs) == 0 {
-		return JobSubscription{}, multierr.Append(merr, errors.New("Job must have a valid log initiator"))
+		return JobSubscription{}, multierr.Append(
+			merr, errors.New(
+				"Unable to subscribe to any logs. Check earlier errors in this message, and the initiator types."))
 	}
 
 	js := JobSubscription{Job: job, unsubscribers: initSubs}

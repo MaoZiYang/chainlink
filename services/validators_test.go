@@ -162,6 +162,14 @@ func TestValidateServiceAgreement(t *testing.T) {
 		{"less than minimum payment", basic.Add("payment", "1"), true},
 		{"less than minimum expiration", basic.Add("expiration", 1), true},
 		{"without being listed as an oracle", basic.Add("oracles", []string{}), true},
+		{"more than one initiator should fail",
+			basic.Add("initiators",
+				[]models.Initiator{
+					{0, "", models.InitiatorServiceAgreementExecutionLog,
+						models.InitiatorParams{}},
+					{0, "", models.InitiatorWeb, models.InitiatorParams{}},
+				}),
+			true},
 	}
 
 	for _, test := range tests {

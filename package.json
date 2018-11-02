@@ -18,6 +18,8 @@
     "@ensdomains/ens": "^0.1.1",
     "change-case": "^3.0.2",
     "formik": "^1.0.3",
+    "global": "^4.3.2",
+    "jslint": "^0.12.0",
     "link_token": "^1.0.1",
     "openzeppelin-solidity": "^1.12.0",
     "solidity-cborutils": "github:smartcontractkit/solidity-cborutils"

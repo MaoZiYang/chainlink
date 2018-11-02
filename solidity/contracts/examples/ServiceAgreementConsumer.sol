@@ -34,7 +34,15 @@ contract ServiceAgreementConsumer is Chainlinked {
     public
     checkChainlinkFulfillment(_requestId)
   {
+    // XXX: This is a bad example for a ServiceAgreement, because it assumes a
+    // single Oracle. Somewhere, there needs to be storage and aggregation of
+    // each Oracle's response. It's not clear where that should happen. Maybe in
+    // Coordinator#fulfillData?
     emit RequestFulfilled(_requestId, _price);
     currentPrice = _price;
+  }
+
+  function cancelRequest(bytes32 _requestId) public {
+    cancelChainlinkRequest(_requestId);
   }
 }

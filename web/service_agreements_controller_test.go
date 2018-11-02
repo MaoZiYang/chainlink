@@ -16,6 +16,8 @@ func TestServiceAgreementsController_Create(t *testing.T) {
 	config, _ := cltest.NewConfigWithPrivateKey()
 	app, cleanup := cltest.NewApplicationWithConfigAndUnlockedAccount(config)
 	defer cleanup()
+	eth := cltest.MockEthOnStore(app.GetStore())
+	eth.RegisterSubscription("logs")
 
 	client := app.NewHTTPClient()
 	base := cltest.EasyJSONFromFixture("../internal/fixtures/web/hello_world_agreement.json")
@@ -53,6 +55,7 @@ func TestServiceAgreementsController_Create(t *testing.T) {
 					jobids = append(jobids, j.ID)
 				}
 				assert.Contains(t, jobids, createdSA.JobSpec.ID)
+				eth.EventuallyAllCalled(t)
 			}
 		})
 	}
@@ -64,6 +67,8 @@ func TestServiceAgreementsController_Create_isIdempotent(t *testing.T) {
 	config, _ := cltest.NewConfigWithPrivateKey()
 	app, cleanup := cltest.NewApplicationWithConfigAndUnlockedAccount(config)
 	defer cleanup()
+	eth := cltest.MockEthOnStore(app.GetStore())
+	eth.RegisterSubscription("logs")
 
 	client := app.NewHTTPClient()
 
@@ -83,6 +88,7 @@ func TestServiceAgreementsController_Create_isIdempotent(t *testing.T) {
 
 	assert.Equal(t, response1.ID, response2.ID)
 	assert.Equal(t, response1.JobSpec.ID, response2.JobSpec.ID)
+	eth.EventuallyAllCalled(t)
 }
 
 func TestServiceAgreementsController_Show(t *testing.T) {
